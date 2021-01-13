@@ -1,13 +1,13 @@
 
 export enum GemColor {
-  red = "red",
-  green = "green",
-  blue = "blue",
-  white = "white",
-  black = "black",
-  gold = "gold"
+  red = 'red',
+  green = 'green',
+  blue = 'blue',
+  white = 'white',
+  black = 'black',
+  gold = 'gold'
 }
-export type GemColorStrings = keyof typeof GemColor;
+export type GemColorString = keyof typeof GemColor;
 
 export enum CardLevel {
   one, two, three

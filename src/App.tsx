@@ -31,8 +31,8 @@ const addPlayer = (players: Player[]) => ([...players, {
 
 const initPlayers = () => addPlayer(addPlayer([]));
 
-const initGems = (playerCount: number = 2): GemCollection => {
-  const tokenCount = 4;
+const initGems = (playerCount = 2): GemCollection => {
+  const tokenCount = 2 + playerCount;
   return {
     [GemColor.green]: Array(tokenCount).fill(GemColor.green),
     [GemColor.red]: Array(tokenCount).fill(GemColor.red),
@@ -40,7 +40,7 @@ const initGems = (playerCount: number = 2): GemCollection => {
     [GemColor.white]: Array(tokenCount).fill(GemColor.white),
     [GemColor.black]: Array(tokenCount).fill(GemColor.black),
     [GemColor.gold]: Array(5).fill(GemColor.gold),
-  }
+  };
 };
 
 const initCards = (): CardPool => {
@@ -51,18 +51,17 @@ const initCards = (): CardPool => {
     points: randInt(5, 0),
     cost: Array(randInt(4,1)).fill(null).map(getRandomGemColor),
     level: (level !== null) ? level : CardLevel[LEVELS[randInt(LEVELS.length)]],
-  })
-  
+  });
 
   return {
     deck: Array(78).fill(null).map(generateCard),
     [CardLevel.one]: Array(4).fill(null).map(() => generateCard(CardLevel.one)),
     [CardLevel.two]: Array(4).fill(null).map(() => generateCard(CardLevel.two)),
     [CardLevel.three]: Array(4).fill(null).map(() => generateCard(CardLevel.three)),
-  }
-}
+  };
+};
 
-const initNobles = (): Noble[] => {
+const initNobles = (playerCount = 2): Noble[] => {
   // TODO: read from somewhere
 
   const generateNoble = (): Noble => {
@@ -77,14 +76,13 @@ const initNobles = (): Noble[] => {
       cost:  colors.reduce((gems: GemColor[], color) =>
         [...gems, ...Array(cardCost).fill(GemColor[color])]
       , [])
-    }
+    };
   };
 
-  // TODO: change number of nobles depending on number of players
-  return Array(3).fill(null).map(generateNoble);
-}
+  return Array(playerCount + 1).fill(null).map(generateNoble);
+};
 
-function App() {
+function App(): React.ReactElement<Record<string, unknown>> {
   const [players, setPlayers] = useState<Player[]>(initPlayers);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState<number>(0);
   const [tokensToBuy, setTokensToBuy] = useState<Gem[]>([]);
@@ -98,7 +96,7 @@ function App() {
     // increment index to select next player in list, reset to index zero if over length
     const nextPlayerIndex = currentPlayerIndex + 1;
     setCurrentPlayerIndex(nextPlayerIndex >= players.length ? 0 : nextPlayerIndex);
-  }
+  };
 
   const endPlayerTurn = () => {
     if (tokensToBuy.length) {
@@ -144,7 +142,7 @@ function App() {
       ...gemPool,
       [gem.color]: gemPool[gem.color].slice(0, gemPool[gem.color].length - 1),
     });
-  }
+  };
 
   const addGemsToPlayer = (gems: Gem[]) => {
     // add gem selected to current players gem collection
@@ -159,10 +157,7 @@ function App() {
   };
 
   const onPlayerSelectCard = (card: Card) => {
-    // check if player has enough gem/cards
-    const goldTokens = [...playerInTurn.gems.gold];
-
-    // cant buy
+    // check if the user can afford the card
     if (!canPlayerAffordCard(playerInTurn, card)) {
       // TODO: Offer option to reserve
       return;
@@ -215,9 +210,9 @@ function App() {
       {tokensToBuy.length > 0 && 
         <div className="turnModal">
           <div className="tokensToBuyBox">
-            {tokensToBuy.map((token) => {
+            {tokensToBuy.map((token, key) => {
               return (
-                <div className="tokenToBuy">
+                <div key={key} className="tokenToBuy">
                   <div className={`gemToken color-${token.color}`}>1</div>
                   <input type="button" onClick={() => {
                     setTokensToBuy(tokensToBuy.filter(t => t !== token));
@@ -228,7 +223,7 @@ function App() {
                     });
                   }} value="x"/>
                 </div>
-              )
+              );
             })}
           </div>
           <input type="button" onClick={endPlayerTurn} value="End Turn" />
@@ -236,13 +231,13 @@ function App() {
       }
 
       <GameBoard
-          gemPool={gemPool}
-          players={players}
-          playerInTurn={playerInTurn}
-          cardPool={cardPool}
-          noblePool={nobles}
-          onPlayerSelectGem={onPlayerSelectGem}
-          onPlayerSelectCard={onPlayerSelectCard}
+        gemPool={gemPool}
+        players={players}
+        playerInTurn={playerInTurn}
+        cardPool={cardPool}
+        noblePool={nobles}
+        onPlayerSelectGem={onPlayerSelectGem}
+        onPlayerSelectCard={onPlayerSelectCard}
       />
     </div>
   );
