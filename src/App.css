@@ -1,38 +1,281 @@
-.App {
-  text-align: center;
+html {
+  box-sizing: border-box;
+  font-size: 16px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+*, *:before, *:after {
+  box-sizing: inherit;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+body, h1, h2, h3, h4, h5, h6, p, ol, ul {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+ol, ul {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/************/
+
+.gameBoard {
+  display: flex;
+}
+
+.turnModal {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  background-color: white;
+  right: 0;
+  bottom: 50px;
+  padding: 10px;
+  border: 1px solid black;
+  border-right: 0;
+  border-radius: 10px 0 0 10px;
+  z-index: 9;
+}
+
+.turnModal .tokensToBuyBox {
+  display: flex;
+  padding: 10px;
+}
+
+.turnModal .tokensToBuyBox .tokenToBuy {
+  margin: 5px;
+}
+
+.playerList {
+    display: flex;
+    flex-direction: column;
+}
+
+.playerList .playerHand {
+    border: 1px solid;
+    margin: 10px 10px 10px 0;
+}
+
+.playerList .playerHand.currentPlayer {
+  background-color: #DDF;
+}
+
+.playerList .playerGemAndCards {
+  display: flex;
+  margin: 5px;
+  border: 1px solid;
+}
+
+.playerList .playerGemAndCards .cardCount {
+    size: 1em;
+    font-weight: bold;
+    float: left;
+    bottom: 10px;
+    margin: 10px;
+    border: 1px solid;
+    padding: 5px;
+    width: 15px;
+    height: 15px;
+    text-align: center;
+    line-height: 15px;
+    box-sizing: content-box;
+}
+
+.playArea {
+  display: flex;
+  flex-direction: row;
+}
+
+.playArea .cardGallery {
+  flex-direction: column-reverse;
+  display: flex;
+  flex-wrap: nowrap;
+  align-self: flex-start;
+}
+
+.playArea .gemStack {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+}
+
+.gemStack .gemToken {
+    cursor: pointer;
+}
+
+.card {
+  width: 120px;
+  height: 160px;
+  border: 1px black solid;
+  border-radius: 10px;
+  display: inline-block;
+  margin: 5px;
+  position: relative;
+  cursor: pointer;
+}
+
+.card.card-affordable {
+  box-shadow: 0px 0px 5px 1px #00f;
+}
+
+.card .points {
+  size: 1em;
+  font-weight: bold;
+  float: left;
+  margin: 10px;
+}
+
+.card .costBox {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.playerHand .heading {
+  display: flex;
+  margin: 5px;
+}
+
+.playerHand .heading .playerName {
+  flex-grow: 4;
+}
+
+.playerHand .heading .playerPoints {
+  display: flex;
+  flex-grow: 1;
+  justify-content: flex-end;
+  text-align: right;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.tokensToBuyBox .gemToken,
+.playerHand .gemToken,
+.gemStack .gemToken,
+.card .costBox .cost {
+  size: 1em;
+  font-weight: bold;
+  float: left;
+  bottom: 10px;
+  margin: 10px;
+  border: 1px solid;
+  padding: 5px;
+  border-radius: 15px;
+  width: 15px;
+  height: 15px;
+  text-align: center;
+  line-height: 15px;
+  box-sizing: content-box;
+}
+
+.cardCount.color-red,
+.gemToken.color-red,
+.cost.color-red,
+.card .costBox .cost.color-red {
+  background-color: red;
+  border: 1px solid red;
+}
+
+.cardCount.color-green,
+.gemToken.color-green,
+.cost.color-green,
+.card .costBox .cost.color-green {
+  background-color: green;
+  border: 1px solid green;
+}
+
+.cardCount.color-blue,
+.gemToken.color-blue,
+.cost.color-blue,
+.card .costBox .cost.color-blue {
+  background-color: blue;
+  border: 1px solid blue;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.cardCount.color-white,
+.gemToken.color-white,
+.cost.color-white,
+.card .costBox .cost.color-white {
+  background-color: white;
+  border: 1px solid black;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.cardCount.color-black,
+.gemToken.color-black,
+.cost.color-black,
+.card .costBox .cost.color-black {
+  background-color: black;
+  border: 1px solid black;
+  color: white;
+}
+
+.cardCount.color-gold,
+.gemToken.color-gold,
+.cost.color-gold,
+.card .costBox .cost.color-gold {
+  background-color: gold;
+  border: 1px solid gold;
+  color: white;
+}
+
+.card .gem {
+  border: 1px solid black;
+  float: right;
+  height: 15px;
+  width: 15px;
+  margin: 10px;
+}
+
+.card .gem.gem-red {
+  background-color: red;
+}
+
+.card .gem.gem-green {
+  background-color: green;
+}
+
+.card .gem.gem-blue {
+  background-color: blue;
+}
+
+.card .gem.gem-white {
+  background-color: white;
+}
+
+.card .gem.gem-black {
+  background-color: black;
+}
+
+.noblesBox {
+  display: flex;
+  flex-direction: column;
+}
+
+.noblesBox .nobleCard {
+  position: relative;
+  height: 100px;
+  width: 100px;
+  border:1px solid black;
+  margin: 10px;
+}
+
+.noblesBox .nobleCard .cost {
+  width: 1em;
+  text-align: center;
+  margin: 5px;
+  border: 1px solid;
+}
+
+.noblesBox .nobleCard .points {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 5px;
 }
