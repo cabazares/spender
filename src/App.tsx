@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 
 import './App.css';
 import {
-  COLORS, LEVELS, randInt, getRandomGemColor, getShuffledColors, canPlayerAffordCard,
+  COLORS,
+  LEVELS,
+  randInt,
+  getRandomGemColor,
+  getShuffledColors,
+  canPlayerAffordCard,
+  getPlayerPoints,
 } from './utils';
 import GameBoard from './Board';
 
@@ -17,7 +23,8 @@ import {
   CardPool,
 } from './types';
 
-
+const POINTS_TO_WIN = 15;
+const MAX_TOKENS = 10;
 
 const addPlayer = (players: Player[]) => ([...players, {
   id: players.length,
@@ -46,12 +53,34 @@ const initGems = (playerCount = 2): GemCollection => {
 const initCards = (): CardPool => {
   // TODO: read cards from somewhere or generate
 
-  const generateCard = (level: CardLevel): Card => ({
-    color: getRandomGemColor(),
-    points: randInt(5, 0),
-    cost: Array(randInt(4,1)).fill(null).map(getRandomGemColor),
-    level: (level !== null) ? level : CardLevel[LEVELS[randInt(LEVELS.length)]],
-  });
+  const generateCard = (level: CardLevel): Card => {
+    level = (level !== null) ? level : CardLevel[LEVELS[randInt(LEVELS.length)]];
+
+    // return random colors from N choices
+    const getRandomColor = (colorSpace: GemColor[]) => () =>
+      colorSpace[randInt(colorSpace.length)];
+
+    let colors = getShuffledColors().slice(0, 4).map(color => GemColor[color]);
+    let cost = Array(randInt(5,3)).fill(null).map(getRandomColor(colors));
+    let points = cost.length >= 4 ? 1 : 0;
+
+    if (CardLevel.two === level) {
+      colors = getShuffledColors().slice(0, 3).map(color => GemColor[color]);
+      cost = Array(randInt(9,7)).fill(null).map(getRandomColor(colors));
+      points = cost.length >= 8 ? 2 : 1;
+    } else if (CardLevel.three === level) {
+      colors = getShuffledColors().slice(0, 2).map(color => GemColor[color]);
+      cost = Array(randInt(10,7)).fill(null).map(getRandomColor(colors));
+      points = cost.length >= 8 ? 5 : 4;
+    }
+
+    return {
+      color: colors[0],
+      points,
+      cost,
+      level,
+    };
+  };
 
   return {
     deck: Array(78).fill(null).map(generateCard),
@@ -104,8 +133,12 @@ function App(): React.ReactElement<Record<string, unknown>> {
       setTokensToBuy([]);
     }
 
-    // TODO: limit to 10 tokens in hand
-    // ask player to select tokens to return
+    // TODO: ask player to select tokens to return if tokens > 10
+    if (COLORS.reduce((total, color) => total + playerInTurn.gems[color].length, 0) > MAX_TOKENS) {
+      // TODO:
+    }
+
+
 
     checkAvailableNobles();
     checkIfPlayerWon();
@@ -114,21 +147,54 @@ function App(): React.ReactElement<Record<string, unknown>> {
   };
 
   const checkAvailableNobles = () => {
-    // TODO: check nobles that can be bought
-    // show option to choose if multiple
+    // check nobles that can be bought
+    const afforableNobles = nobles.reduce((total: Noble[], noble: Noble) => {
+      if (COLORS.map(color =>
+        noble.cost.filter(gemcolor => gemcolor === color).length <=
+          playerInTurn.cards.filter(card => card.color === color).length
+      ).every(Boolean)) {
+        return [...total, noble];
+      }
+      return total;
+    }, []);
+
+    // TODO: show option to choose if multiple
+
+    // get first noble and add it to player's
+    if (afforableNobles.length) {
+      const updatedPlayer = {
+        ...playerInTurn,
+        nobles: [...playerInTurn.nobles, afforableNobles[0]],
+      };
+      setPlayers(players.map((player) => (player.id === playerInTurn.id ? updatedPlayer : player)));
+    }
   };
 
   const checkIfPlayerWon = () => {
-    // TODO
+    if (getPlayerPoints(playerInTurn) >= POINTS_TO_WIN) {
+      alert(`Congrats! Player ${playerInTurn.id} won!`);
+    }
   };
 
   const onPlayerSelectGem = (gem: Gem) => {
-    // prevent adding  token when pool is empty
-    if (gemPool[gem.color].length === 0) {
+    if (
+      // prevent adding  token when pool is empty
+      gemPool[gem.color].length === 0 ||
+      // only allow same color if pool token count >= 4
+      (gemPool[gem.color].length < 3 &&
+          tokensToBuy.filter(token => token.color === gem.color).length) ||
+      // prevent another gem selection if 2 tokens of same color already selected
+      COLORS
+        .map(color => tokensToBuy.filter(token => token.color === color).length)
+        .some(count => count >= 2) ||
+      // prevent same color selection if token of another color already present
+      (COLORS
+        .map(color => tokensToBuy.filter(token => token.color === color).length)
+        .reduce((total, count) => total + count, 0) >= 2 &&
+       tokensToBuy.map(token => token.color).includes(gem.color))
+    ) {
       return;
     }
-
-    // TODO: limit max 2 tokens of same color, and only if pool token count >= 4
 
     // limit buying to max 3 tokens
     if (tokensToBuy.length < 3) {
@@ -163,9 +229,12 @@ function App(): React.ReactElement<Record<string, unknown>> {
       return;
     }
 
-    // TODO: take cards nto account
+    // give back gem tokens to pool
     const updatedGemPool = COLORS.reduce((pool, color) => {
       const cost = card.cost.filter(token => token === color);
+      // remove cards from cost, since we dont add that back to gem pool
+      cost.splice(0, playerInTurn.cards.filter(card => card.color === color).length);
+
       // TODO: take into account gold token
       // remove gems from player
       playerInTurn.gems[GemColor[color]].splice(0, cost.length);
@@ -236,6 +305,7 @@ function App(): React.ReactElement<Record<string, unknown>> {
         playerInTurn={playerInTurn}
         cardPool={cardPool}
         noblePool={nobles}
+        tokensToBuy={tokensToBuy}
         onPlayerSelectGem={onPlayerSelectGem}
         onPlayerSelectCard={onPlayerSelectCard}
       />

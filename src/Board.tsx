@@ -34,15 +34,21 @@ const GemStack = (
 );
 
 const CardComponent = (
-  { card, currentPlayer, onPlayerSelectCard }:
-  { card: Card, currentPlayer:Player, onPlayerSelectCard: (card: Card) => void }
+  { card, currentPlayer, tokensToBuy, onPlayerSelectCard }:
+  { card: Card, currentPlayer:Player, tokensToBuy: Gem[], onPlayerSelectCard: (card: Card) => void }
 ) => {
   const canAfford = canPlayerAffordCard(currentPlayer, card);
+  const canAffordLater = canPlayerAffordCard(currentPlayer, card, tokensToBuy);
+
+  const classNames = [
+    'card',
+    'card-visible',
+    canAfford ? 'card-affordable' : '',
+    !canAfford && canAffordLater ? 'card-affordable-later' : '',
+  ];
   return (
-    <div
-      className={`card card-visible ${canAfford ? 'card-affordable' : ''}`}
-      onClick={() => onPlayerSelectCard(card)}>
-      <div className="points">{card.points}</div>
+    <div className={classNames.join(' ')} onClick={() => onPlayerSelectCard(card)}>
+      {card.points > 0 && <div className="points">{card.points}</div>}
       <div className={`gem gem-${card.color}`} />
       <div className="costBox">
         {COLORS.map(color => {
@@ -55,30 +61,36 @@ const CardComponent = (
 };
 
 const CardRow = (
-  { level, cards, currentPlayer, onPlayerSelectCard }:
+  { level, cards, currentPlayer, tokensToBuy, onPlayerSelectCard }:
   {
     level: CardLevel,
     cards: Card[],
     currentPlayer: Player,
+    tokensToBuy: Gem[],
     onPlayerSelectCard: (card: Card) => void,
   }
 ) => (
   <div className="cardGalleryRow">
-    {CardLevel[level]}
     {cards.map((card, key) =>
       <CardComponent
         key={key}
         card={card}
-        onPlayerSelectCard={onPlayerSelectCard}
         currentPlayer={currentPlayer}
+        tokensToBuy={tokensToBuy}
+        onPlayerSelectCard={onPlayerSelectCard}
       />
     )}
   </div>
 );
 
 const CardGallery = (
-  { cardPool, currentPlayer, onPlayerSelectCard }:
-  { cardPool: CardPool, currentPlayer: Player, onPlayerSelectCard: (card: Card) => void }
+  { cardPool, currentPlayer, tokensToBuy, onPlayerSelectCard }:
+  {
+    cardPool: CardPool,
+    currentPlayer: Player,
+    tokensToBuy: Gem[],
+    onPlayerSelectCard: (card: Card) => void
+  }
 ) => (
   <div className="cardGallery">
     {LEVELS.map(level =>
@@ -87,6 +99,7 @@ const CardGallery = (
         level={CardLevel[level]}
         cards={cardPool[CardLevel[level]]}
         currentPlayer={currentPlayer}
+        tokensToBuy={tokensToBuy}
         onPlayerSelectCard={onPlayerSelectCard}
       />
     )}
@@ -128,6 +141,9 @@ const PlayerList = ({ players, currentPlayer }: { players: Player[], currentPlay
             </div>
           </div>
         ))}
+        <div>
+          Noble points: {player.nobles.reduce((total, noble) => total + noble.points, 0)}
+        </div>
       </div>
     ))}
   </div>
@@ -139,6 +155,7 @@ interface GameBoardProps {
   noblePool: Noble[],
   players: Player[],
   playerInTurn: Player,
+  tokensToBuy: Gem[],
   onPlayerSelectGem: (gem: Gem) => void,
   onPlayerSelectCard: (card: Card) => void,
 }
@@ -150,6 +167,7 @@ const GameBoard = (
     noblePool,
     players,
     playerInTurn,
+    tokensToBuy,
     onPlayerSelectGem,
     onPlayerSelectCard,
   }: GameBoardProps
@@ -161,6 +179,7 @@ const GameBoard = (
         cardPool={cardPool}
         onPlayerSelectCard={onPlayerSelectCard}
         currentPlayer={playerInTurn}
+        tokensToBuy={tokensToBuy}
       />
       <GemStack gems={gemPool} onPlayerSelectGem={onPlayerSelectGem}/>
       <NobleGallery nobles={noblePool} />
