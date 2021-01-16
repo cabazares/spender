@@ -33,10 +33,16 @@ const GemStack = (
   </div>
 );
 
-const CardComponent = (
-  { card, currentPlayer, tokensToBuy, onPlayerSelectCard }:
-  { card: Card, currentPlayer:Player, tokensToBuy: Gem[], onPlayerSelectCard: (card: Card) => void }
-) => {
+export interface CardComponentProps {
+  card: Card,
+  currentPlayer:Player,
+  tokensToBuy?: Gem[],
+  onPlayerSelectCard?: (card: Card) => void
+}
+
+export const CardComponent = (
+  { card, currentPlayer, tokensToBuy=[], onPlayerSelectCard=() => ({}) }: CardComponentProps
+): React.ReactElement<CardComponentProps>  => {
   const canAfford = canPlayerAffordCard(currentPlayer, card);
   const canAffordLater = canPlayerAffordCard(currentPlayer, card, tokensToBuy);
 
@@ -70,7 +76,7 @@ const CardRow = (
     onPlayerSelectCard: (card: Card) => void,
   }
 ) => (
-  <div className="cardGalleryRow">
+  <div className="cardGalleryRow" key={level}>
     {cards.map((card, key) =>
       <CardComponent
         key={key}
@@ -120,7 +126,10 @@ const NobleGallery = ({ nobles }: { nobles: Noble[] }) => (
   </div>
 );
 
-const PlayerList = ({ players, currentPlayer }: { players: Player[], currentPlayer: Player }) => (
+const PlayerList = (
+  { players, currentPlayer, onReservedCardListSelect }:
+  { players: Player[], currentPlayer: Player, onReservedCardListSelect: (player: Player) => void }
+) => (
   <div className="playerList">
     {players.map((player) => (
       <div
@@ -142,6 +151,14 @@ const PlayerList = ({ players, currentPlayer }: { players: Player[], currentPlay
           </div>
         ))}
         <div>
+          reserved cards:
+          {player.reservedCards.map((card, key) => {
+            return (<div key={key} onClick={() => {
+              onReservedCardListSelect(player);
+            }}>{card.color}</div>);
+          })}
+        </div>
+        <div>
           Noble points: {player.nobles.reduce((total, noble) => total + noble.points, 0)}
         </div>
       </div>
@@ -149,7 +166,7 @@ const PlayerList = ({ players, currentPlayer }: { players: Player[], currentPlay
   </div>
 );
 
-interface GameBoardProps {
+export interface GameBoardProps {
   gemPool: GemCollection,
   cardPool: CardPool,
   noblePool: Noble[],
@@ -158,9 +175,10 @@ interface GameBoardProps {
   tokensToBuy: Gem[],
   onPlayerSelectGem: (gem: Gem) => void,
   onPlayerSelectCard: (card: Card) => void,
+  onReservedCardListSelect: (player: Player) => void,
 }
 
-const GameBoard = (
+export const GameBoard = (
   {
     gemPool,
     cardPool,
@@ -170,21 +188,28 @@ const GameBoard = (
     tokensToBuy,
     onPlayerSelectGem,
     onPlayerSelectCard,
+    onReservedCardListSelect,
   }: GameBoardProps
-): React.ReactElement<GameBoardProps> => (
-  <div className="gameBoard">
-    <PlayerList players={players} currentPlayer={playerInTurn} />
-    <div className="playArea">
-      <CardGallery
-        cardPool={cardPool}
-        onPlayerSelectCard={onPlayerSelectCard}
+): React.ReactElement<GameBoardProps> => {
+  return (<>
+    <div className="gameBoard">
+      <PlayerList
+        players={players}
         currentPlayer={playerInTurn}
-        tokensToBuy={tokensToBuy}
+        onReservedCardListSelect={onReservedCardListSelect}
       />
-      <GemStack gems={gemPool} onPlayerSelectGem={onPlayerSelectGem}/>
-      <NobleGallery nobles={noblePool} />
+      <div className="playArea">
+        <CardGallery
+          cardPool={cardPool}
+          onPlayerSelectCard={onPlayerSelectCard}
+          currentPlayer={playerInTurn}
+          tokensToBuy={tokensToBuy}
+        />
+        <GemStack gems={gemPool} onPlayerSelectGem={onPlayerSelectGem}/>
+        <NobleGallery nobles={noblePool} />
+      </div>
     </div>
-  </div>
-);
+  </>);
+};
 
 export default GameBoard;

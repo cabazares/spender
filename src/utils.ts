@@ -60,7 +60,7 @@ export const canPlayerAffordCard = (player: Player, card: Card, extraGems: Gem[]
     if (cost <= canSpend) {
       return true;
     } else if (cost <= canSpend + goldTokenCount) {
-      goldTokenCount = cost - canSpend;
+      goldTokenCount -= cost - canSpend;
       return true;
     }
     return false;

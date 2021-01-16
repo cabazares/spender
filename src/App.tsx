@@ -3,14 +3,17 @@ import React, { useState } from 'react';
 import './App.css';
 import {
   COLORS,
+  MAIN_COLORS,
   LEVELS,
   randInt,
-  getRandomGemColor,
   getShuffledColors,
   canPlayerAffordCard,
   getPlayerPoints,
 } from './utils';
-import GameBoard from './Board';
+import {
+  GameBoard,
+  CardComponent,
+} from './Board';
 
 import {
   Card,
@@ -25,6 +28,7 @@ import {
 
 const POINTS_TO_WIN = 15;
 const MAX_TOKENS = 10;
+const MAX_RESERVED_CARDS = 3;
 
 const addPlayer = (players: Player[]) => ([...players, {
   id: players.length,
@@ -115,11 +119,15 @@ function App(): React.ReactElement<Record<string, unknown>> {
   const [players, setPlayers] = useState<Player[]>(initPlayers);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState<number>(0);
   const [tokensToBuy, setTokensToBuy] = useState<Gem[]>([]);
+  const [cardToReserve, setCardToReserve] = useState<Card | null>(null);
   const [gemPool, setGemPool] = useState<GemCollection>(initGems());
   const [cardPool, setCardPool] = useState<CardPool>(initCards());
   const [nobles, setNobles] = useState<Noble[]>(initNobles());
 
   const playerInTurn = players[currentPlayerIndex];
+
+  const [shouldShowReservedCards, setShouldShowReservedCards] = useState<boolean>(false);
+  const [reservedCardsPlayer, setReservedCardsPlayer] = useState<Player>(playerInTurn);
 
   const switchToNextPlayer = () => {
     // increment index to select next player in list, reset to index zero if over length
@@ -137,8 +145,6 @@ function App(): React.ReactElement<Record<string, unknown>> {
     if (COLORS.reduce((total, color) => total + playerInTurn.gems[color].length, 0) > MAX_TOKENS) {
       // TODO:
     }
-
-
 
     checkAvailableNobles();
     checkIfPlayerWon();
@@ -168,6 +174,7 @@ function App(): React.ReactElement<Record<string, unknown>> {
       };
       setPlayers(players.map((player) => (player.id === playerInTurn.id ? updatedPlayer : player)));
     }
+    setNobles(nobles.filter(noble => noble != afforableNobles[0]));
   };
 
   const checkIfPlayerWon = () => {
@@ -195,6 +202,8 @@ function App(): React.ReactElement<Record<string, unknown>> {
     ) {
       return;
     }
+    setCardToReserve(null);
+    setShouldShowReservedCards(false);
 
     // limit buying to max 3 tokens
     if (tokensToBuy.length < 3) {
@@ -222,38 +231,18 @@ function App(): React.ReactElement<Record<string, unknown>> {
     setPlayers(players.map((player) => (player.id === playerInTurn.id ? updatedPlayer : player)));
   };
 
-  const onPlayerSelectCard = (card: Card) => {
-    // check if the user can afford the card
-    if (!canPlayerAffordCard(playerInTurn, card)) {
-      // TODO: Offer option to reserve
-      return;
-    }
-
-    // give back gem tokens to pool
-    const updatedGemPool = COLORS.reduce((pool, color) => {
-      const cost = card.cost.filter(token => token === color);
-      // remove cards from cost, since we dont add that back to gem pool
-      cost.splice(0, playerInTurn.cards.filter(card => card.color === color).length);
-
-      // TODO: take into account gold token
-      // remove gems from player
-      playerInTurn.gems[GemColor[color]].splice(0, cost.length);
-
-      return {
-        ...pool,
-        [GemColor[color]]: [...pool[GemColor[color]], ...cost],
-      };
-    }, gemPool);
+  const resetTokensToBuy = () => {
+    const tokensSelected = [...tokensToBuy];
+    setTokensToBuy([]);
+    // add back token to gem pool
+    const updatedGemPool = COLORS.reduce((pool, color) => ({
+      ...pool,
+      [color]: [...pool[color], ...tokensSelected.filter(token => token.color === color)]
+    }), gemPool);
     setGemPool(updatedGemPool);
+  };
 
-    // add card selected to current players cards
-    const updatedPlayer = {
-      ...playerInTurn,
-      cards: [...playerInTurn.cards, card],
-    };
-    setPlayers(players.map((player) => (player.id === playerInTurn.id ? updatedPlayer : player)));
-
-    // replace card from deck
+  const removeCardFromBoard = (card: Card) => {
     const cardIndex = cardPool[card.level].indexOf(card);
     const newCard = cardPool.deck.find(cardInDeck => cardInDeck.level === card.level);
     const newCards = [...cardPool[card.level]];
@@ -267,6 +256,54 @@ function App(): React.ReactElement<Record<string, unknown>> {
       deck: cardPool.deck.filter(cardInDeck => cardInDeck !== newCard),
       [card.level]: newCards,
     });
+  };
+
+  const onPlayerSelectCard = (card: Card, canReserve = true) => {
+    // check if the user can afford the card
+    if (!canPlayerAffordCard(playerInTurn, card)) {
+      if (playerInTurn.reservedCards.length < MAX_RESERVED_CARDS && canReserve) {
+        // Offer option to reserve
+        setCardToReserve(card);
+        resetTokensToBuy();
+        setShouldShowReservedCards(false);
+      }
+      return;
+    }
+
+    // give back gem tokens to pool
+    const updatedGemPool = MAIN_COLORS.reduce((pool, color) => {
+      const cost = card.cost.filter(token => token === color);
+
+      const cardsUsed = playerInTurn.cards.filter(card => card.color === color);
+      // compute how much gold tokens were used
+      const goldCount = 
+        Math.max(cost.length - cardsUsed.length - playerInTurn.gems[GemColor[color]].length, 0);
+
+      // remove cards and gold from cost, since we dont add that back to gem pool
+      cost.splice(0, cardsUsed.length + goldCount);
+
+      // remove gems from player
+      playerInTurn.gems[GemColor[color]].splice(0, cost.length);
+      playerInTurn.gems[GemColor.gold].splice(0, goldCount);
+
+      return {
+        ...pool,
+        // add gems tokens back to pool
+        [GemColor[color]]: [...pool[GemColor[color]], ...cost],
+        // add gold tokens back
+        [GemColor.gold]: [...pool.gold, ...Array(goldCount).fill(GemColor.gold)],
+      };
+    }, gemPool);
+    setGemPool(updatedGemPool);
+
+    // add card selected to current players cards
+    const updatedPlayer = {
+      ...playerInTurn,
+      cards: [...playerInTurn.cards, card],
+    };
+    setPlayers(players.map((player) => (player.id === playerInTurn.id ? updatedPlayer : player)));
+
+    removeCardFromBoard(card);
 
     checkAvailableNobles();
     checkIfPlayerWon();
@@ -274,8 +311,35 @@ function App(): React.ReactElement<Record<string, unknown>> {
     switchToNextPlayer();
   };
 
+  const reserveCard = (card: Card) => {
+    // remove gold token from gem pool
+    const updatedGemPool = { ...gemPool };
+    const goldToken = updatedGemPool.gold.pop();
+    setGemPool(updatedGemPool);
+
+    const updatedPlayer: Player = {
+      ...playerInTurn,
+      reservedCards: [...playerInTurn.reservedCards, card],
+      gems: {
+        ...playerInTurn.gems,
+        // add gold token
+        [GemColor.gold]: [
+          ...playerInTurn.gems.gold,
+          ...(goldToken ? [goldToken] : [])
+        ],
+      },
+    };
+    setPlayers(players.map(player => (player.id === playerInTurn.id ? updatedPlayer : player)));
+
+    setCardToReserve(null);
+    removeCardFromBoard(card);
+
+    switchToNextPlayer();
+  };
+
   return (
     <div className="App">
+      {/* Modal to show selected tokens */}
       {tokensToBuy.length > 0 && 
         <div className="turnModal">
           <div className="tokensToBuyBox">
@@ -299,6 +363,34 @@ function App(): React.ReactElement<Record<string, unknown>> {
         </div>
       }
 
+      {/* Modal to reserve card*/}
+      {cardToReserve !== null && 
+        <div className="reserveCardModal">
+          <CardComponent
+            card={cardToReserve}
+            currentPlayer={playerInTurn} />
+          <input type="button" onClick={() => reserveCard(cardToReserve)} value="Reserve Card" />
+          <input type="button" onClick={() => setCardToReserve(null)} value="Cancel" />
+        </div>
+      }
+
+      {/* Modal to show reseved cards */}
+      {shouldShowReservedCards &&
+        <div className="playerReservedCardsModal">
+          <div>Reserved Cards:</div>
+          {reservedCardsPlayer.reservedCards.map((card, key) => (
+            <div key={key}>
+              <CardComponent
+                card={card}
+                currentPlayer={reservedCardsPlayer}
+                onPlayerSelectCard={(card: Card) => onPlayerSelectCard(card, false)}
+              />
+            </div>
+          ))}
+          <input type="button" onClick={() => setShouldShowReservedCards(false)} value="Cancel" />
+        </div>
+      }
+
       <GameBoard
         gemPool={gemPool}
         players={players}
@@ -308,6 +400,14 @@ function App(): React.ReactElement<Record<string, unknown>> {
         tokensToBuy={tokensToBuy}
         onPlayerSelectGem={onPlayerSelectGem}
         onPlayerSelectCard={onPlayerSelectCard}
+        onReservedCardListSelect={
+          (player: Player) => {
+            setReservedCardsPlayer(player);
+            setShouldShowReservedCards(true);
+            resetTokensToBuy();
+            setCardToReserve(null);
+          }
+        }
       />
     </div>
   );
