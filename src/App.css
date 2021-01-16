@@ -28,6 +28,7 @@ img {
   display: flex;
 }
 
+.playerDiscardModal,
 .playerReservedCardsModal,
 .reserveCardModal,
 .turnModal {
@@ -105,6 +106,7 @@ img {
   flex-direction: column;
 }
 
+.playerDiscardModal .gemToken,
 .gemStack .gemToken {
     cursor: pointer;
 }
@@ -159,6 +161,7 @@ img {
   font-size: 1.2em;
 }
 
+.playerDiscardModal .gemToken,
 .tokensToBuyBox .gemToken,
 .playerHand .gemToken,
 .gemStack .gemToken,

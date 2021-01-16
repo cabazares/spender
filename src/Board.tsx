@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { COLORS, LEVELS, getPlayerPoints, canPlayerAffordCard } from './utils';
+import { COLORS, LEVELS, getPlayerPoints, getPlayerTokenCount, canPlayerAffordCard } from './utils';
 
 import {
   Card,
@@ -140,6 +140,7 @@ const PlayerList = (
           <div className="playerName">Player {player.id}</div>
           <div className="playerPoints">{getPlayerPoints(player)}</div>
         </div>
+        <div>{getPlayerTokenCount(player)}/10</div>
         {COLORS.map((color) => (
           <div key={color} className="playerGemAndCards">
             <div  className={`cardCount color-${color}`}>

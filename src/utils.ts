@@ -66,3 +66,6 @@ export const canPlayerAffordCard = (player: Player, card: Card, extraGems: Gem[]
     return false;
   }).every(Boolean);
 };
+
+export const getPlayerTokenCount = (player: Player): number =>
+  COLORS.reduce((total: number, color: GemColorString) => total + player.gems[color].length, 0);

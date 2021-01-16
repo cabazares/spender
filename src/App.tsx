@@ -9,6 +9,7 @@ import {
   getShuffledColors,
   canPlayerAffordCard,
   getPlayerPoints,
+  getPlayerTokenCount,
 } from './utils';
 import {
   GameBoard,
@@ -141,11 +142,6 @@ function App(): React.ReactElement<Record<string, unknown>> {
       setTokensToBuy([]);
     }
 
-    // TODO: ask player to select tokens to return if tokens > 10
-    if (COLORS.reduce((total, color) => total + playerInTurn.gems[color].length, 0) > MAX_TOKENS) {
-      // TODO:
-    }
-
     checkAvailableNobles();
     checkIfPlayerWon();
 
@@ -185,6 +181,8 @@ function App(): React.ReactElement<Record<string, unknown>> {
 
   const onPlayerSelectGem = (gem: Gem) => {
     if (
+      // dont allow selecting gems if more than MAX already
+      getPlayerTokenCount(playerInTurn) > MAX_TOKENS ||
       // prevent adding  token when pool is empty
       gemPool[gem.color].length === 0 ||
       // only allow same color if pool token count >= 4
@@ -259,6 +257,10 @@ function App(): React.ReactElement<Record<string, unknown>> {
   };
 
   const onPlayerSelectCard = (card: Card, canReserve = true) => {
+    // prevent player from buying when they have to discard first
+    if (getPlayerTokenCount(playerInTurn) > MAX_TOKENS) {
+      return;
+    }
     // check if the user can afford the card
     if (!canPlayerAffordCard(playerInTurn, card)) {
       if (playerInTurn.reservedCards.length < MAX_RESERVED_CARDS && canReserve) {
@@ -309,6 +311,19 @@ function App(): React.ReactElement<Record<string, unknown>> {
     checkIfPlayerWon();
 
     switchToNextPlayer();
+  };
+
+  const returnGemToPool = (gem: Gem) => {
+    // remove gems from player
+    playerInTurn.gems[GemColor[gem.color]].splice(0, 1);
+    setPlayers(players.map((player) => (player.id === playerInTurn.id ? playerInTurn : player)));
+
+    // give back gem tokens to pool
+    const updatedGemPool = {
+      ...gemPool,
+      [GemColor[gem.color]]: [...gemPool[GemColor[gem.color]], gem.color],
+    };
+    setGemPool(updatedGemPool);
   };
 
   const reserveCard = (card: Card) => {
@@ -388,6 +403,25 @@ function App(): React.ReactElement<Record<string, unknown>> {
             </div>
           ))}
           <input type="button" onClick={() => setShouldShowReservedCards(false)} value="Cancel" />
+        </div>
+      }
+
+      {/* Modal to discard tokens */}
+      {getPlayerTokenCount(playerInTurn) > MAX_TOKENS &&
+        <div className="playerDiscardModal">
+          <div>Select tokens to return:</div>
+          {COLORS.map(color => (
+            <div
+              key={color}
+              className={`gemToken color-${color}`}
+              onClick={() => {
+                returnGemToPool({ color } as Gem);
+                if (getPlayerTokenCount(playerInTurn) <= MAX_TOKENS) {
+                  switchToNextPlayer();
+                }
+              }}
+            >{playerInTurn.gems[color].length}</div>
+          ))}
         </div>
       }
 
