@@ -1,29 +1,14 @@
-
-export enum GemColor {
-  red = 'red',
-  green = 'green',
-  blue = 'blue',
-  white = 'white',
-  black = 'black',
-  gold = 'gold'
-}
-export type GemColorString = keyof typeof GemColor;
+export type GemColor =
+  | 'red'
+  | 'green'
+  | 'blue'
+  | 'white'
+  | 'black'
+  | 'gold'
+;
 
 export enum CardLevel {
   one, two, three
-}
-
-export interface Gem {
-  color: GemColor
-}
-
-export interface GemCollection {
-  [GemColor.green]: GemColor.green[]
-  [GemColor.red]: GemColor.red[]
-  [GemColor.blue]: GemColor.blue[]
-  [GemColor.white]: GemColor.white[]
-  [GemColor.black]: GemColor.black[]
-  [GemColor.gold]: GemColor.gold[]
 }
 
 export interface Card {
@@ -47,7 +32,7 @@ export interface Noble {
 
 export interface Player {
   id: number
-  gems: GemCollection
+  gems: GemColor[],
   cards: Card[]
   reservedCards: Card[]
   nobles: Noble[]

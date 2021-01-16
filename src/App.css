@@ -70,8 +70,8 @@ img {
 
 .playerList .playerGemAndCards {
   display: flex;
-  margin: 5px;
-  border: 1px solid;
+  justify-content: center;
+  margin: 2px;
 }
 
 .playerList .playerGemAndCards .cardCount {
@@ -79,7 +79,7 @@ img {
     font-weight: bold;
     float: left;
     bottom: 10px;
-    margin: 10px;
+    margin: 0px;
     border: 1px solid;
     padding: 5px;
     width: 15px;
@@ -87,6 +87,10 @@ img {
     text-align: center;
     line-height: 15px;
     box-sizing: content-box;
+}
+
+.playerList .playerGemAndCards .gemToken {
+  margin: 0;
 }
 
 .playArea {

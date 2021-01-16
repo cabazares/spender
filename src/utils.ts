@@ -1,31 +1,24 @@
 import {
-  Gem,
   GemColor,
-  GemColorString,
   Card,
-  CardLevel,
   Player,
   Noble,
 } from './types';
 
+import {
+  GEM_COLORS,
+  MAIN_COLORS,
+  COLORS,
+} from './constants';
+
 export const randInt = (max: number, min = 0): number =>
   Math.floor(Math.random() * (max - min)) + min;
 
-export const enumKeys  = <
-  O extends Record<string, unknown>,
-  K extends keyof O = keyof O
->(obj: O): K[] => Object.keys(obj).filter(k => Number.isNaN(+k)) as K[];
+export const getRandomColor = (choices: GemColor[] = MAIN_COLORS): GemColor =>
+  choices[randInt(choices.length)];
+export const getRandomColorWithGold = (): GemColor => getRandomColor(COLORS);
 
-export const COLORS = enumKeys(GemColor);
-export const MAIN_COLORS = COLORS.filter(color => color !== GemColor.gold);
-export const LEVELS = enumKeys(CardLevel);
-
-export const getRandomGemColorFromArray = (choices: GemColorString[]): GemColor =>
-  GemColor[choices[randInt(choices.length)]];
-export const getRandomGemColor = (): GemColor => getRandomGemColorFromArray(MAIN_COLORS);
-export const getRandomGemColorWithGold = (): GemColor => getRandomGemColorFromArray(COLORS);
-
-export const shuffle = (colorsToUse: GemColorString[]): GemColorString[] => {
+export const shuffle = (colorsToUse: GemColor[]): GemColor[] => {
   const colors  = [...colorsToUse];
   for (let i = colors.length - 1; i > 0; i--) {
     const j = randInt(i + 1);
@@ -35,8 +28,27 @@ export const shuffle = (colorsToUse: GemColorString[]): GemColorString[] => {
   }
   return colors;
 };
-export const getShuffledColors = (): GemColorString[] => shuffle(MAIN_COLORS);
-export const getShuffledColorsWithGold = (): GemColorString[] => shuffle(COLORS);
+export const getShuffledColors = (): GemColor[] => shuffle(MAIN_COLORS);
+export const getShuffledColorsWithGold = (): GemColor[] => shuffle(COLORS);
+
+export const gemsByColor = (gems: GemColor[]): Record<GemColor, GemColor[]> =>
+  COLORS.reduce((pool, color) => ({
+    ...pool,
+    [color]: gems.filter(gem =>  gem === color)
+  }), {}) as Record<GemColor, GemColor[]>;
+
+export const gemsOfColor = (gems: GemColor[], color: GemColor): GemColor[] =>
+  gems.filter(gem => gem === color);
+
+export const removeGems = (gems: GemColor[], toRemove: GemColor[]): GemColor[] => {
+  return gems.reduce(([updated, gemsToRemove], gem) => {
+    const gemIndex = gemsToRemove.indexOf(gem);
+    if (gemIndex !== -1) {
+      gemsToRemove.splice(gemIndex, 1);
+    }
+    return [[...updated, ...(gemIndex === -1 ? [gem] : [])], gemsToRemove];
+  }, [[], [...toRemove]])[0];
+};
 
 // player utils
 
@@ -44,17 +56,17 @@ export const getPlayerPoints = (player: Player): number =>
   player.cards.reduce((total: number, card: Card) => total + card.points, 0) +
   player.nobles.reduce((total: number, noble: Noble) => total + noble.points, 0);
 
-export const canPlayerAffordCard = (player: Player, card: Card, extraGems: Gem[] = []): boolean => {
-  let goldTokenCount = player.gems.gold.length;
+export const canPlayerAffordCard = (
+  player: Player, card: Card, extraGems: GemColor[] = []): boolean => {
+  let goldTokenCount = gemsOfColor(player.gems, GEM_COLORS.GOLD).length;
 
   return COLORS.map((color) => {
     const cost = card.cost.filter(token => token === color).length;
     const discount = player.cards.filter(card => card.color === color).length;
 
-    const canSpend =
-      discount +
-      player.gems[color].length +
-      extraGems.filter((gem: Gem) => gem.color === color).length;
+    const canSpend = discount +
+      gemsOfColor(player.gems, color).length +
+      gemsOfColor(extraGems, color).length;
 
     // check if can afford with discount and tokens)
     if (cost <= canSpend) {
@@ -68,4 +80,6 @@ export const canPlayerAffordCard = (player: Player, card: Card, extraGems: Gem[]
 };
 
 export const getPlayerTokenCount = (player: Player): number =>
-  COLORS.reduce((total: number, color: GemColorString) => total + player.gems[color].length, 0);
+  COLORS.reduce(
+    (total: number, color: GemColor) => total + gemsOfColor(player.gems, color).length, 0);
+

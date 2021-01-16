@@ -1,13 +1,22 @@
 import React from 'react';
 
-import { COLORS, LEVELS, getPlayerPoints, getPlayerTokenCount, canPlayerAffordCard } from './utils';
+import {
+  GEM_COLORS,
+  COLORS,
+  LEVELS,
+  MAX_TOKENS,
+} from './constants';
+import {
+  getPlayerPoints,
+  getPlayerTokenCount,
+  canPlayerAffordCard,
+  gemsOfColor,
+} from './utils';
 
 import {
   Card,
   CardPool,
   GemColor,
-  GemCollection,
-  Gem,
   Player,
   Noble,
   CardLevel,
@@ -16,27 +25,30 @@ import {
 
 const GemStack = (
   { gems, onPlayerSelectGem }:
-  { gems: GemCollection, onPlayerSelectGem?: (gem: Gem) => void }
+  { gems: GemColor[], onPlayerSelectGem?: (gem: GemColor) => void }
 ) => (
   <div className="gemStack">
-    {COLORS.map(color => (
-      <div
-        key={color}
-        className={`gemToken color-${color}`}
-        onClick={() => {
-          if (gems[color].length > 0 && color !== GemColor.gold) {
-            onPlayerSelectGem && onPlayerSelectGem({ color } as Gem);
-          }
-        }}
-      >{gems[color].length}</div>
-    ))}
+    {COLORS.map(color => {
+      const tokens = gemsOfColor(gems, color);
+      return (
+        <div
+          key={color}
+          className={`gemToken color-${color}`}
+          onClick={() => {
+            if (tokens.length > 0 && color !== GEM_COLORS.GOLD) {
+              onPlayerSelectGem && onPlayerSelectGem(color);
+            }
+          }}
+        >{tokens.length}</div>
+      );
+    })}
   </div>
 );
 
 export interface CardComponentProps {
   card: Card,
   currentPlayer:Player,
-  tokensToBuy?: Gem[],
+  tokensToBuy?: GemColor[],
   onPlayerSelectCard?: (card: Card) => void
 }
 
@@ -72,7 +84,7 @@ const CardRow = (
     level: CardLevel,
     cards: Card[],
     currentPlayer: Player,
-    tokensToBuy: Gem[],
+    tokensToBuy: GemColor[],
     onPlayerSelectCard: (card: Card) => void,
   }
 ) => (
@@ -94,7 +106,7 @@ const CardGallery = (
   {
     cardPool: CardPool,
     currentPlayer: Player,
-    tokensToBuy: Gem[],
+    tokensToBuy: GemColor[],
     onPlayerSelectCard: (card: Card) => void
   }
 ) => (
@@ -140,14 +152,14 @@ const PlayerList = (
           <div className="playerName">Player {player.id}</div>
           <div className="playerPoints">{getPlayerPoints(player)}</div>
         </div>
-        <div>{getPlayerTokenCount(player)}/10</div>
+        <div>{getPlayerTokenCount(player)}/{MAX_TOKENS}</div>
         {COLORS.map((color) => (
           <div key={color} className="playerGemAndCards">
             <div  className={`cardCount color-${color}`}>
               {player.cards.filter(card => card.color === color).length}
             </div>
             <div className={`gemToken color-${color}`}>
-              {player.gems[color].length}
+              {gemsOfColor(player.gems, color).length}
             </div>
           </div>
         ))}
@@ -168,13 +180,13 @@ const PlayerList = (
 );
 
 export interface GameBoardProps {
-  gemPool: GemCollection,
+  gemPool: GemColor[],
   cardPool: CardPool,
   noblePool: Noble[],
   players: Player[],
   playerInTurn: Player,
-  tokensToBuy: Gem[],
-  onPlayerSelectGem: (gem: Gem) => void,
+  tokensToBuy: GemColor[],
+  onPlayerSelectGem: (gem: GemColor) => void,
   onPlayerSelectCard: (card: Card) => void,
   onReservedCardListSelect: (player: Player) => void,
 }
