@@ -29,13 +29,6 @@ const NobleExpectObject = expect.objectContaining({
   points: expect.any(Number),
   cost: expect.arrayContaining([expect.any(String)]),
 });
-const PlayerExpectObject = expect.objectContaining({
-  id: expect.any(Number),
-  cards: expect.arrayContaining([CardExpectObject]),
-  nobles: expect.arrayContaining([NobleExpectObject]),
-  reservedCards: expect.arrayContaining([CardExpectObject]),
-  gems: expect.arrayContaining([expect.any(String)]),
-});
 
 describe('Game Setup', () => {
   test('creates a new game', () => {
