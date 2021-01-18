@@ -20,9 +20,7 @@ export interface Card {
 
 export interface CardPool {
   deck: Card[]
-  [CardLevel.one]: Card[]
-  [CardLevel.two]: Card[]
-  [CardLevel.three]: Card[]
+  cards: Card[]   // cards face up on table
 }
 
 export interface Noble {
@@ -38,3 +36,21 @@ export interface Player {
   nobles: Noble[]
 }
 
+export type GameState =
+  | 'setup'       // initial state, setting up players. before game start
+  | 'playerTurn'  // waiting for player to finish turn
+  | 'endOfTurn'   // calculate if winner won, pleyer has to discard card, select nobles, etc
+  | 'gameEnd'     // end of game
+;
+
+export interface Game {
+  players: Player[]
+  gemPool: GemColor[]
+  cardPool: CardPool,
+  noblePool: Noble[]
+  currentPlayerIndex: number
+  state: GameState
+  // related to current turn
+  tokensToBuy: GemColor[]
+  cardToReserve: Card | null
+}

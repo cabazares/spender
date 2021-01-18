@@ -11,6 +11,7 @@ import {
   getPlayerTokenCount,
   canPlayerAffordCard,
   gemsOfColor,
+  getCurrentPlayer,
 } from './utils';
 
 import {
@@ -20,6 +21,7 @@ import {
   Player,
   Noble,
   CardLevel,
+  Game,
 } from './types';
 
 
@@ -115,7 +117,7 @@ const CardGallery = (
       <CardRow
         key={level}
         level={CardLevel[level]}
-        cards={cardPool[CardLevel[level]]}
+        cards={cardPool.cards.filter(card => card.level === CardLevel[level])}
         currentPlayer={currentPlayer}
         tokensToBuy={tokensToBuy}
         onPlayerSelectCard={onPlayerSelectCard}
@@ -180,12 +182,7 @@ const PlayerList = (
 );
 
 export interface GameBoardProps {
-  gemPool: GemColor[],
-  cardPool: CardPool,
-  noblePool: Noble[],
-  players: Player[],
-  playerInTurn: Player,
-  tokensToBuy: GemColor[],
+  game: Game,
   onPlayerSelectGem: (gem: GemColor) => void,
   onPlayerSelectCard: (card: Card) => void,
   onReservedCardListSelect: (player: Player) => void,
@@ -193,12 +190,7 @@ export interface GameBoardProps {
 
 export const GameBoard = (
   {
-    gemPool,
-    cardPool,
-    noblePool,
-    players,
-    playerInTurn,
-    tokensToBuy,
+    game,
     onPlayerSelectGem,
     onPlayerSelectCard,
     onReservedCardListSelect,
@@ -207,19 +199,19 @@ export const GameBoard = (
   return (<>
     <div className="gameBoard">
       <PlayerList
-        players={players}
-        currentPlayer={playerInTurn}
+        players={game.players}
+        currentPlayer={getCurrentPlayer(game)}
         onReservedCardListSelect={onReservedCardListSelect}
       />
       <div className="playArea">
         <CardGallery
-          cardPool={cardPool}
+          cardPool={game.cardPool}
           onPlayerSelectCard={onPlayerSelectCard}
-          currentPlayer={playerInTurn}
-          tokensToBuy={tokensToBuy}
+          currentPlayer={getCurrentPlayer(game)}
+          tokensToBuy={game.tokensToBuy}
         />
-        <GemStack gems={gemPool} onPlayerSelectGem={onPlayerSelectGem}/>
-        <NobleGallery nobles={noblePool} />
+        <GemStack gems={game.gemPool} onPlayerSelectGem={onPlayerSelectGem}/>
+        <NobleGallery nobles={game.noblePool} />
       </div>
     </div>
   </>);

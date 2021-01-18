@@ -3,6 +3,8 @@ import {
   Card,
   Player,
   Noble,
+  CardPool,
+  Game,
 } from './types';
 
 import {
@@ -52,6 +54,8 @@ export const removeGems = (gems: GemColor[], toRemove: GemColor[]): GemColor[] =
 
 // player utils
 
+export const getCurrentPlayer = (game: Game): Player => game.players[game.currentPlayerIndex];
+
 export const getPlayerPoints = (player: Player): number =>
   player.cards.reduce((total: number, card: Card) => total + card.points, 0) +
   player.nobles.reduce((total: number, noble: Noble) => total + noble.points, 0);
@@ -82,4 +86,42 @@ export const canPlayerAffordCard = (
 export const getPlayerTokenCount = (player: Player): number =>
   COLORS.reduce(
     (total: number, color: GemColor) => total + gemsOfColor(player.gems, color).length, 0);
+
+export const removeCardFromBoard = (cardPool: CardPool, card: Card): CardPool => {
+  const cardIndex = cardPool.cards.indexOf(card);
+  const newCard = cardPool.deck.find(cardInDeck => cardInDeck.level === card.level);
+  const newCards = [...cardPool.cards];
+  if (newCard) {
+    newCards[cardIndex] = newCard;
+  } else {
+    newCards.splice(cardIndex, 1);
+  }
+  return {
+    ...cardPool,
+    deck: cardPool.deck.filter(cardInDeck => cardInDeck !== newCard),
+    cards: newCards,
+  };
+};
+
+export const getTokensToPayForCard = (game: Game, card: Card): GemColor[] => {
+  const currentPlayer = game.players[game.currentPlayerIndex];
+  // discount from cards
+  const cardDiscount: GemColor[] = currentPlayer.cards
+    .reduce((gems: GemColor[], card: Card) => [...gems, card.color], []);
+
+  // cost minus discount in cards
+  const costInTokens = removeGems(card.cost, cardDiscount);
+  // gold the player has
+  const playerGold = gemsOfColor(currentPlayer.gems, GEM_COLORS.GOLD);
+  // non gold tokens left for the user
+  const tokensLeft = removeGems(currentPlayer.gems, [...costInTokens, ...playerGold]);
+  // non gold tokens paid by the user
+  const tokensPaid = removeGems(currentPlayer.gems, [...tokensLeft, ...playerGold]);
+
+  // compute how much gold tokens were used to pay
+  const costDeficit = removeGems(costInTokens, tokensPaid);
+  const goldTokenCost = Array(Math.max(costDeficit.length, 0)).fill(GEM_COLORS.GOLD);
+
+  return [...tokensPaid, ...goldTokenCost];
+};
 

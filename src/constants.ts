@@ -1,6 +1,7 @@
 import {
   GemColor,
   CardLevel,
+  GameState,
 } from './types';
 
 const enumKeys  = <
@@ -23,10 +24,20 @@ export const MAIN_COLORS: GemColor[] = [
   GEM_COLORS.WHITE,
   GEM_COLORS.BLACK,
 ];
+export const GAME_STATES = {
+  SETUP: 'setup',
+  TURN: 'playerTurn',
+  END_TURN: 'endOfTurn',
+  GAME_END: 'gameEnd',
+} as Record<string, GameState>;
+
 export const COLORS: GemColor[] = [...MAIN_COLORS, GEM_COLORS.GOLD];
 export const LEVELS = enumKeys(CardLevel);
+
+export const TOTAL_GOLD_TOKENS = 5;
+export const TOTAL_CARDS = 90;
+export const CARDS_PER_LEVEL = 4;
 
 export const POINTS_TO_WIN = 15;
 export const MAX_TOKENS = 10;
 export const MAX_RESERVED_CARDS = 3;
-
