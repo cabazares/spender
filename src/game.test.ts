@@ -372,7 +372,7 @@ describe('Player\'s Turn', () => {
     const setupGame: Game = {
       ...readyGame,
       gemPool: [GEM_COLORS.GREEN],
-      state: GAME_STATES.END_TURN,
+      state: GAME_STATES.CHECK_WIN,
     };
     setupGame.players[0].cards = [
       cardWithPointsMock, cardWithPointsMock, cardWithPointsMock,
@@ -383,14 +383,4 @@ describe('Player\'s Turn', () => {
     expect(game.state).toBe(GAME_STATES.GAME_END);
   });
 });
-
-
-
-
-
-
-
-
-
-
 

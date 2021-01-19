@@ -63,7 +63,7 @@ const createCards = (): CardPool => {
       points = cost.length >= 8 ? 2 : 1;
     } else if (CardLevel.three === level) {
       colors = getShuffledColors().slice(0, 2);
-      cost = Array(randInt(10,7)).fill(null).map(() => getRandomColor(colors));
+      cost = Array(randInt(10,8)).fill(null).map(() => getRandomColor(colors));
       points = cost.length >= 8 ? 5 : 4;
     }
 
@@ -130,6 +130,7 @@ export const createGame = (): Game => ({
   state: GAME_STATES.SETUP,
   tokensToBuy: [],
   cardToReserve: null,
+  affordableNobles: [],
 } as Game);
 
 export const addPlayer = (game: Game): Game => ({
@@ -281,6 +282,31 @@ export const returnPlayerGemToPool = (game: Game, token: GemColor): Game => ({
   gemPool: [...game.gemPool, token],
 });
 
+// check nobles that can be bought
+const getAffordableNobles = (game: Game) =>
+  game.noblePool.reduce((total: Noble[], noble: Noble) => {
+    if (COLORS.map(color =>
+      noble.cost.filter(gemcolor => gemcolor === color).length <=
+        getCurrentPlayer(game).cards.filter(card => card.color === color).length
+    ).every(Boolean)) {
+      return [...total, noble];
+    }
+    return total;
+  }, []);
+
+export const addNobleToPlayer = (game: Game, noble: Noble): Game => ({
+  ...game,
+  state: GAME_STATES.CHECK_WIN,
+  noblePool: game.noblePool.filter(n => n !== noble),
+  affordableNobles: [],
+  players: game.players
+    .map(player => (player === getCurrentPlayer(game) ? {
+      ...player,
+      nobles: [...player.nobles, noble],
+    } : player)),
+});
+
+
 export const processEndOfTurn = (game: Game): Game => {
   // handle switching game states
   if (game.state === GAME_STATES.SETUP) {
@@ -290,8 +316,29 @@ export const processEndOfTurn = (game: Game): Game => {
       state: GAME_STATES.TURN,
     };
   } else if (game.state === GAME_STATES.END_TURN) {
-    // TODO: check nobles
+    //  ask player to discard extra tokens
+    if (getPlayerTokenCount(getCurrentPlayer(game)) > MAX_TOKENS) {
+      return game;
+    }
 
+    // check nobles
+    const affordableNobles = getAffordableNobles(game);
+
+    if (affordableNobles.length === 1) {
+      // add noble to player and recheck conditions
+      return processEndOfTurn(addNobleToPlayer(game, affordableNobles[0]));
+    } else if (affordableNobles.length > 1) {
+      return {
+        ...game,
+        affordableNobles,
+      };
+    }
+
+    return {
+      ...game,
+      state: GAME_STATES.CHECK_WIN,
+    };
+  } else if (game.state === GAME_STATES.CHECK_WIN) {
     // check win condition
     if (getPlayerPoints(getCurrentPlayer(game)) >= POINTS_TO_WIN) {
       alert(`Player ${getCurrentPlayer(game).id} has won!`);
@@ -301,13 +348,9 @@ export const processEndOfTurn = (game: Game): Game => {
       };
     }
 
-    //  ask player to discard extra tokens
-    if (getPlayerTokenCount(getCurrentPlayer(game)) > MAX_TOKENS) {
-      return game;
-    }
-
     return switchToNextPlayer(game);
   }
 
   return game;
 };
+

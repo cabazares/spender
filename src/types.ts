@@ -40,6 +40,7 @@ export type GameState =
   | 'setup'       // initial state, setting up players. before game start
   | 'playerTurn'  // waiting for player to finish turn
   | 'endOfTurn'   // calculate if winner won, pleyer has to discard card, select nobles, etc
+  | 'checkWinner' // check win conditions
   | 'gameEnd'     // end of game
 ;
 
@@ -53,4 +54,5 @@ export interface Game {
   // related to current turn
   tokensToBuy: GemColor[]
   cardToReserve: Card | null
+  affordableNobles: Noble[]
 }

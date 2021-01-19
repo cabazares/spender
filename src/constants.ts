@@ -28,6 +28,7 @@ export const GAME_STATES = {
   SETUP: 'setup',
   TURN: 'playerTurn',
   END_TURN: 'endOfTurn',
+  CHECK_WIN: 'checkWinner',
   GAME_END: 'gameEnd',
 } as Record<string, GameState>;
 

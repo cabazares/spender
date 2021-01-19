@@ -17,6 +17,7 @@ import {
   chooseGemToBuy,
   buyOrReserveCard,
   processEndOfTurn,
+  addNobleToPlayer,
 } from '../game';
 
 import {
@@ -42,6 +43,7 @@ import {
   Game,
 } from '../types';
 import {DiscardGemModal} from './DiscardGemModal';
+import {NobleSelectionModal} from './NobleSelectionModal';
 
 const App = (): React.ReactElement<Record<string, unknown>> => {
   const [game, setGame] = useState<Game>(addPlayer(addPlayer(createGame())));
@@ -100,6 +102,13 @@ const App = (): React.ReactElement<Record<string, unknown>> => {
             )
           }
         />
+      }
+
+      {/* Modal to allow user to select nobles */}
+      {game.affordableNobles.length > 0 &&
+        <NobleSelectionModal nobles={game.affordableNobles} onSelectNoble={(noble) => {
+          setGame(addNobleToPlayer(game, noble));
+        }} />
       }
 
       <GameBoard
