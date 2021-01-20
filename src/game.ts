@@ -131,12 +131,28 @@ export const createGame = (): Game => ({
   tokensToBuy: [],
   cardToReserve: null,
   affordableNobles: [],
-} as Game);
+});
 
-export const addPlayer = (game: Game): Game => ({
+export const startGame = (game: Game): Game => ({
+  ...game,
+  state: GAME_STATES.TURN,
+});
+
+export const resetGame = (game: Game): Game => ({
+  ...game,
+  state: GAME_STATES.SETUP,
+  gemPool: createGems(game.players.length),
+  cardPool: createCards(),
+  noblePool: createNobles(game.players.length),
+  tokensToBuy: [],
+  cardToReserve: null,
+  affordableNobles: [],
+});
+
+export const addPlayer = (game: Game, id: string): Game => ({
   ...game,
   players: [...game.players, {
-    id: game.players.length,
+    id,
     cards: [],
     nobles: [],
     reservedCards: [],
@@ -309,13 +325,7 @@ export const addNobleToPlayer = (game: Game, noble: Noble): Game => ({
 
 export const processEndOfTurn = (game: Game): Game => {
   // handle switching game states
-  if (game.state === GAME_STATES.SETUP) {
-    // start game
-    return {
-      ...game,
-      state: GAME_STATES.TURN,
-    };
-  } else if (game.state === GAME_STATES.END_TURN) {
+  if (game.state === GAME_STATES.END_TURN) {
     //  ask player to discard extra tokens
     if (getPlayerTokenCount(getCurrentPlayer(game)) > MAX_TOKENS) {
       return game;

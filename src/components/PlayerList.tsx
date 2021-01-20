@@ -3,6 +3,7 @@ import React from 'react';
 import {
   COLORS,
   MAX_TOKENS,
+  PLAYER_CHOICE_POOL,
 } from '../constants';
 import {
   getPlayerPoints,
@@ -30,7 +31,8 @@ export const PlayerList = (
         className={`playerHand ${player === p ? 'currentPlayer' : ''}`}
       >
         <div className="heading">
-          <div className="playerName">Player {p.id}</div>
+          <img className="playerImg" src={PLAYER_CHOICE_POOL.find(pl => pl.name === p.id)?.src} />
+          <div className="playerName">{p.id}</div>
           <div className="playerPoints">{getPlayerPoints(p)}</div>
         </div>
         <div>{getPlayerTokenCount(p)}/{MAX_TOKENS}</div>

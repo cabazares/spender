@@ -29,8 +29,8 @@ export interface Noble {
 }
 
 export interface Player {
-  id: number
-  gems: GemColor[],
+  id: string
+  gems: GemColor[]
   cards: Card[]
   reservedCards: Card[]
   nobles: Noble[]
@@ -55,4 +55,9 @@ export interface Game {
   tokensToBuy: GemColor[]
   cardToReserve: Card | null
   affordableNobles: Noble[]
+}
+
+export interface PlayerChoice {
+  name: string
+  src: string
 }

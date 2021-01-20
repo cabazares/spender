@@ -52,13 +52,13 @@ describe('Game Setup', () => {
   test('adds new player', () => {
     const game = createGame();
 
-    const updatedGame = addPlayer(game);
+    const updatedGame = addPlayer(game, 'test');
 
     expect(updatedGame).toMatchObject({
       ...game,
       currentPlayerIndex: 0,
       players: [{
-        id: 0,
+        id: 'test',
         cards: [],
         nobles: [],
         reservedCards: [],
@@ -70,19 +70,19 @@ describe('Game Setup', () => {
   test('adds second player', () => {
     const game = createGame();
 
-    const updatedGame = addPlayer(addPlayer(game));
+    const updatedGame = addPlayer(addPlayer(game, 'one'), 'two');
 
     expect(updatedGame).toMatchObject({
       ...game,
       currentPlayerIndex: 0,
       players: [{
-        id: 0,
+        id: 'one',
         cards: [],
         nobles: [],
         reservedCards: [],
         gems: [],
       }, {
-        id: 1,
+        id: 'two',
         cards: [],
         nobles: [],
         reservedCards: [],
@@ -95,7 +95,7 @@ describe('Game Setup', () => {
 
 describe('Player\'s Turn', () => {
 
-  const readyGame = addPlayer(addPlayer(createGame()));
+  const readyGame = addPlayer(addPlayer(createGame(), 'one'), 'two');
   const cardMock = {
     color: GEM_COLORS.RED,
     cost: [GEM_COLORS.RED, GEM_COLORS.BLUE, GEM_COLORS.BLACK],

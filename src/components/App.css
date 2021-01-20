@@ -300,3 +300,21 @@ img {
   font-weight: bold;
   margin: 5px;
 }
+
+.playerSelectionScreen .playerSlots {
+  display: flex;
+  justify-content: space-evenly;
+  text-align: center;
+}
+
+.playerSlot {
+  width: 180px;
+  height: 180px;
+  border: 1px solid;
+}
+
+.playerImg {
+  display: block;
+  width: 50px;
+  height: 50px;
+}
