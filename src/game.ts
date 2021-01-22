@@ -30,7 +30,6 @@ import {
   Card,
   CardLevel,
   GemColor,
-  Player,
   Noble,
   CardPool,
   Game,
@@ -147,6 +146,13 @@ export const resetGame = (game: Game): Game => ({
   tokensToBuy: [],
   cardToReserve: null,
   affordableNobles: [],
+  players: game.players.map(p => ({
+    id: p.id,
+    cards: [],
+    nobles: [],
+    reservedCards: [],
+    gems: [],
+  })),
 });
 
 export const addPlayer = (game: Game, id: string): Game => ({
@@ -157,8 +163,13 @@ export const addPlayer = (game: Game, id: string): Game => ({
     nobles: [],
     reservedCards: [],
     gems: [],
-  } as Player],
+  }],
   currentPlayerIndex: game.currentPlayerIndex == -1 ? 0 : game.currentPlayerIndex,
+});
+
+export const removePlayer = (game: Game, id: string): Game => ({
+  ...game,
+  players: game.players.filter(player => id !== player.id),
 });
 
 export const chooseGemToBuy = (game: Game, token: GemColor): Game =>

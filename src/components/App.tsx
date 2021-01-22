@@ -22,6 +22,7 @@ import {
   addNobleToPlayer,
   startGame,
   resetGame,
+  removePlayer,
 } from '../game';
 
 import {
@@ -113,7 +114,10 @@ const GameApp = ({ game, setGame }: { game: Game, setGame: (game: Game) => void 
       {/* show gameboard while playing */}
       <GameBoard
         game={game}
-        onPlayerSelectGem={(token) => setGame(chooseGemToBuy(game, token))}
+        onPlayerSelectGem={(token) => {
+          setShouldShowReservedCards(false);
+          setGame(chooseGemToBuy(game, token));
+        }}
         onPlayerSelectCard={(card) => setGame(processEndOfTurn(buyOrReserveCard(game, card)))}
         onReservedCardListSelect={
           (player: Player) => {
@@ -129,17 +133,30 @@ const GameApp = ({ game, setGame }: { game: Game, setGame: (game: Game) => void 
 
 const PlayerChoiceComponent = (
   { 
-    onPlayerSelect,
+    player: initialPlayer,
+    onPlayerReady,
+    onPlayerRemove,
     previousPlayerSelect,
     nextPlayerSelect,
   }: {
-    onPlayerSelect: (name: string) => void,
+    player?: Player,
+    onPlayerReady: (name: string) => void,
+    onPlayerRemove: (name: string) => void,
     previousPlayerSelect: (player?: PlayerChoice) => PlayerChoice,
     nextPlayerSelect: (player?: PlayerChoice) => PlayerChoice,
   }
 ) => {
-  const [player, setPlayer] = useState<PlayerChoice | null>();
+  const initialChoice = PLAYER_CHOICE_POOL.find(
+    choice => choice.name === (initialPlayer && initialPlayer.id)
+  );
+  const [player, setPlayer] = useState<PlayerChoice | null>(initialChoice ? initialChoice : null);
   const [isReady, setIsReady] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (initialPlayer) {
+      setIsReady(true);
+    }
+  }, []);
 
   return (
     <div className="playerSlot">
@@ -164,8 +181,15 @@ const PlayerChoiceComponent = (
       {player && !isReady &&
         <input type="Button" onClick={() => {
           setIsReady(true);
-          return onPlayerSelect(player.name);
+          return onPlayerReady(player.name);
         }} value="Ready?" />
+      }
+      {player && isReady &&
+        <input type="Button" onClick={() => {
+          setIsReady(false);
+          setPlayer(null);
+          return onPlayerRemove(player.name);
+        }} value="Remove" />
       }
     </div>
   );
@@ -203,11 +227,13 @@ const App = (): React.ReactElement<Record<string, unknown>> => {
     return posibleChoices[pIndex];
   };
 
-  const renderPlayerChoice = () => (
+  const renderPlayerChoice = (player: Player) => (
     <PlayerChoiceComponent
-      onPlayerSelect={name => setGame(addPlayer(game, name))}
-      nextPlayerSelect={player => getPlayerChoice(1, player)}
-      previousPlayerSelect={player => getPlayerChoice(-1, player)}
+      player={player}
+      onPlayerReady={name => setGame(addPlayer(game, name))}
+      onPlayerRemove={name => setGame(removePlayer(game, name))}
+      nextPlayerSelect={p => getPlayerChoice(1, p)}
+      previousPlayerSelect={p => getPlayerChoice(-1, p)}
     />
   );
 
@@ -219,10 +245,7 @@ const App = (): React.ReactElement<Record<string, unknown>> => {
       {game.state === GAME_STATES.SETUP &&
         <div className="playerSelectionScreen">
           <div className="playerSlots" >
-            {renderPlayerChoice()}
-            {renderPlayerChoice()}
-            {renderPlayerChoice()}
-            {renderPlayerChoice()}
+            {[0,1,2,3].map(index => renderPlayerChoice(game.players[index]))}
           </div>
 
           {game.players.length > 1 &&
