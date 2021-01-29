@@ -48,16 +48,14 @@ export const GameBoard = (
         player={getCurrentPlayer(game)}
         onReservedCardListSelect={onReservedCardListSelect}
       />
-      <div className="playArea">
-        <CardGallery
-          cardPool={game.cardPool}
-          onPlayerSelectCard={onPlayerSelectCard}
-          player={getCurrentPlayer(game)}
-          tokensToBuy={game.tokensToBuy}
-        />
-        <GemStack gems={game.gemPool} onPlayerSelectGem={onPlayerSelectGem}/>
-        <NobleGallery nobles={game.noblePool} />
-      </div>
+      <CardGallery
+        cardPool={game.cardPool}
+        onPlayerSelectCard={onPlayerSelectCard}
+        player={getCurrentPlayer(game)}
+        tokensToBuy={game.tokensToBuy}
+      />
+      <GemStack gems={game.gemPool} onPlayerSelectGem={onPlayerSelectGem}/>
+      <NobleGallery nobles={game.noblePool} />
     </div>
   </>);
 };

@@ -43,6 +43,7 @@ export const CARDS_PER_LEVEL = 4;
 export const POINTS_TO_WIN = 15;
 export const MAX_TOKENS = 10;
 export const MAX_RESERVED_CARDS = 3;
+export const MAX_PLAYERS = 4;
 
 export const PLAYER_CHOICE_POOL: PlayerChoice[] = [{
   name: 'The Hulk',

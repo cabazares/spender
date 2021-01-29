@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import {
   GAME_STATES,
+  MAX_PLAYERS,
   MAX_TOKENS,
   PLAYER_CHOICE_POOL,
 } from '../constants';
@@ -184,7 +185,7 @@ const PlayerChoiceComponent = (
           return onPlayerReady(player.name);
         }} value="Ready?" />
       }
-      {player && isReady &&
+      {player &&
         <input type="Button" onClick={() => {
           setIsReady(false);
           setPlayer(null);
@@ -239,17 +240,19 @@ const App = (): React.ReactElement<Record<string, unknown>> => {
 
   return (
     <div className="App">
-      <div>Spender</div>
+      <div className="AppTitle">Spender</div>
 
       {/* Game Setup */}
       {game.state === GAME_STATES.SETUP &&
         <div className="playerSelectionScreen">
           <div className="playerSlots" >
-            {[0,1,2,3].map(index => renderPlayerChoice(game.players[index]))}
+            {Array(MAX_PLAYERS).fill(null)
+              .map((_, index) => renderPlayerChoice(game.players[index]))
+            }
           </div>
 
           {game.players.length > 1 &&
-            <input type="button" onClick={() => setGame(startGame(game))} value="Start Game" />
+            <div className="startButton" onClick={() => setGame(startGame(game))}>Start Game</div>
           }
         </div>
       }
@@ -261,7 +264,9 @@ const App = (): React.ReactElement<Record<string, unknown>> => {
       }
 
       {game.state === GAME_STATES.GAME_END &&
-        <input type="button" onClick={() => setGame(resetGame(game))} value="Start New Game" />
+        <div
+          className="startButton"
+          onClick={() => setGame(resetGame(game))}>Start New Game</div>
       }
     </div>
   );

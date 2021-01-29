@@ -36,16 +36,18 @@ export const PlayerList = (
           <div className="playerPoints">{getPlayerPoints(p)}</div>
         </div>
         <div>{getPlayerTokenCount(p)}/{MAX_TOKENS}</div>
-        {COLORS.map((color) => (
-          <div key={color} className="playerGemAndCards">
-            <div  className={`cardCount color-${color}`}>
-              {p.cards.filter(card => card.color === color).length}
+        <div className="playerGemAndCardsBox">
+          {COLORS.map((color) => (
+            <div key={color} className="playerGemAndCards">
+              <div  className={`cardCount color-${color}`}>
+                {p.cards.filter(card => card.color === color).length}
+              </div>
+              <div className={`gemToken color-${color}`}>
+                {gemsOfColor(p.gems, color).length}
+              </div>
             </div>
-            <div className={`gemToken color-${color}`}>
-              {gemsOfColor(p.gems, color).length}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
         <div>
           reserved cards:
           {p.reservedCards.map((card, key) => {
