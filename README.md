@@ -2,6 +2,15 @@
 
 A [Splendor](https://www.spacecowboys.fr/splendor-english) clone.
 
+## Docker deployment
+
+### `docker-compose build`
+### `docker-compose up`
+
+App should be available from port 3005
+
+## Development
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
