@@ -54,16 +54,22 @@ const createCards = (): CardPool => {
 
     let colors = getShuffledColors().slice(0, 4);
     let cost = Array(randInt(5,3)).fill(null).map(() => getRandomColor(colors));
-    let points = (new Set(cost)).size >= 4 ? 1 : 0;
+    let numColors = (new Set(cost)).size;
+    let points = (numColors >= 4 || numColors === 1) ? 1 : 0;
 
     if (CardLevel.two === level) {
       colors = getShuffledColors().slice(0, 3);
-      cost = Array(randInt(9,7)).fill(null).map(() => getRandomColor(colors));
-      points = cost.length >= 8 ? 2 : 1;
+      cost = Array(randInt(8,6)).fill(null).map(() => getRandomColor(colors));
+      numColors = (new Set(cost)).size;
+      points =
+        (numColors === 1)
+          ? 3
+          : (cost.length >= 7 || numColors === 2) ? 2 : 1;
     } else if (CardLevel.three === level) {
-      colors = getShuffledColors().slice(0, 2);
-      cost = Array(randInt(10,8)).fill(null).map(() => getRandomColor(colors));
-      points = cost.length >= 8 ? 5 : 4;
+      colors = getShuffledColors().slice(0, 3);
+      cost = Array(randInt(12,9)).fill(null).map(() => getRandomColor(colors));
+      numColors = (new Set(cost)).size;
+      points = cost.length >= 10 ? 5 : 4;
     }
 
     return {

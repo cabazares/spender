@@ -6,4 +6,4 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     ports:
-      - "3005:3000"
+      - "3005:5000"

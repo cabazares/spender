@@ -6,9 +6,12 @@ COPY package.json ./
 COPY yarn.lock ./
 
 RUN yarn
+RUN yarn add serve
 
 COPY . .
 
-EXPOSE 3000
+EXPOSE 5000
 
-CMD [ "yarn", "run", "start" ]
+RUN yarn build
+
+CMD [ "yarn", "serve", "-s", "build" ]
