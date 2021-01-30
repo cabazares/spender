@@ -49,7 +49,7 @@ export const PlayerList = (
           ))}
         </div>
         <div>
-          reserved cards:
+          Reserved cards:
           {p.reservedCards.map((card, key) => {
             return (<div key={key} onClick={() => {
               onReservedCardListSelect(p);

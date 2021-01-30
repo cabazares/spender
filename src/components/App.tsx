@@ -30,6 +30,8 @@ import {
   getPlayerTokenCount,
   getCurrentPlayer,
   randInt,
+  preloadImg,
+  getCardBackgroundUrl,
 } from '../utils';
 import {
   GameBoard,
@@ -165,28 +167,33 @@ const PlayerChoiceComponent = (
         <div>
           <img src={player.src} />
           <div>
-            <input type="button" onClick={() => {
-              setPlayer(previousPlayerSelect(player));
-            }} value="<" />
+            {!isReady &&
+              <input type="button" readOnly onClick={() => {
+                setPlayer(previousPlayerSelect(player));
+              }} value="<" />
+            }
             {player.name}
-            <input type="button" onClick={() => {
-              setPlayer(nextPlayerSelect(player));
-            }} value=">" />
+            {!isReady &&
+              <input type="button" readOnly onClick={() => {
+                setPlayer(nextPlayerSelect(player));
+              }} value=">" />
+            }
           </div>
         </div>
       }
 
       {!player &&
-        <input type="button" onClick={() => setPlayer(nextPlayerSelect())} value="Add Player" />
+        <input type="button" readOnly
+          onClick={() => setPlayer(nextPlayerSelect())} value="Add Player" />
       }
       {player && !isReady &&
-        <input type="Button" onClick={() => {
+        <input type="Button" readOnly onClick={() => {
           setIsReady(true);
           return onPlayerReady(player.name);
         }} value="Ready?" />
       }
       {player &&
-        <input type="Button" onClick={() => {
+        <input type="Button" readOnly onClick={() => {
           setIsReady(false);
           setPlayer(null);
           return onPlayerRemove(player.name);
@@ -207,7 +214,11 @@ const App = (): React.ReactElement<Record<string, unknown>> => {
 
   // preload images
   useEffect(() => {
-    PLAYER_CHOICE_POOL.map(({ src }) => (new Image()).src = src);
+    // preload player iamges
+    PLAYER_CHOICE_POOL.map(({ src }) => preloadImg(src));
+    // preload card backgrounds
+    game.cardPool.deck.map(card => preloadImg(getCardBackgroundUrl(card)));
+    game.cardPool.cards.map(card => preloadImg(getCardBackgroundUrl(card)));
   }, []);
 
   const getPlayerChoice = (increment: number, player?: PlayerChoice) => {
@@ -247,7 +258,8 @@ const App = (): React.ReactElement<Record<string, unknown>> => {
         <div className="playerSelectionScreen">
           <div className="playerSlots" >
             {Array(MAX_PLAYERS).fill(null)
-              .map((_, index) => renderPlayerChoice(game.players[index]))
+              .map((_, index) => (
+                <div key={index}>{renderPlayerChoice(game.players[index])}</div>))
             }
           </div>
 

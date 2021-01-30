@@ -6,6 +6,7 @@ import {
 
 import {
   canPlayerAffordCard,
+  getCardBackgroundUrl,
 } from '../utils';
 
 import {
@@ -33,10 +34,16 @@ export const CardComponent = (
     canAfford ? 'card-affordable' : '',
     !canAfford && canAffordLater ? 'card-affordable-later' : '',
   ];
+
   return (
-    <div className={classNames.join(' ')} onClick={() => onPlayerSelectCard(card)}>
-      {card.points > 0 && <div className="points">{card.points}</div>}
-      <div className={`gem gem-${card.color}`} />
+    <div className={classNames.join(' ')}
+      onClick={() => onPlayerSelectCard(card)}
+      style={{background: `url('${getCardBackgroundUrl(card)}') repeat white`}}
+    >
+      <div className="cardHeader">
+        <div className={`gem gem-${card.color}`} />
+        {card.points > 0 && <div className="points">{card.points}</div>}
+      </div>
       <div className="costBox">
         {COLORS.map(color => {
           const count = card.cost.filter(gemColor => gemColor === color).length;

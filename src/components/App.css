@@ -1,6 +1,6 @@
 
 .AppTitle {
-  margin: 10px;
+  margin: 10px 20px;
   text-align: center;
   font-size: 2em;
   text-shadow: 1px 1px black;
@@ -136,6 +136,14 @@
   background-color: white;
 }
 
+.card .cardHeader {
+  background-color: rgba(214, 214, 214, 0.6);
+  display: flex;
+  justify-content: space-between;
+  border-radius: 10px 10px 0 0;
+  flex-direction: row-reverse;
+}
+
 .card.card-affordable {
   box-shadow: 0px 0px 6px 6px #2b93ff;
 }
@@ -145,10 +153,12 @@
 }
 
 .card .points {
-  size: 1em;
   font-weight: bold;
-  float: left;
   margin: 10px;
+  text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+  color: white;
+  font-size: 20pt;
+  margin: 7px 15px;
 }
 
 .card .costBox {
@@ -199,24 +209,25 @@
 .gemToken.color-red,
 .cost.color-red,
 .card .costBox .cost.color-red {
-  background-color: red;
-  border: 1px solid red;
+  background-color: rgb(204 27 41);
+  border: 1px solid rgb(204 27 41);
+  color: white;
 }
 
 .cardCount.color-green,
 .gemToken.color-green,
 .cost.color-green,
 .card .costBox .cost.color-green {
-  background-color: green;
-  border: 1px solid green;
+  background-color: rgb(1 128 69);
+  border: 1px solid rgb(1 128 69);
 }
 
 .cardCount.color-blue,
 .gemToken.color-blue,
 .cost.color-blue,
 .card .costBox .cost.color-blue {
-  background-color: blue;
-  border: 1px solid blue;
+  background-color: rgb(2 71 148);
+  border: 1px solid rgb(2 78 139);
   color: white;
 }
 
@@ -232,8 +243,8 @@
 .gemToken.color-black,
 .cost.color-black,
 .card .costBox .cost.color-black {
-  background-color: black;
-  border: 1px solid black;
+  background-color: rgb(50 38 34);
+  border: 1px solid rgb(125 119 117);;
   color: white;
 }
 
@@ -246,24 +257,35 @@
   color: black;
 }
 
+.card .costBox .cost {
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  margin: 5px;
+  border: 2px solid #f5f5f5 !important;
+}
+
+.card .costBox .cost.color-white {
+  border: 2px solid black !important;
+}
+
 .card .gem {
   border: 1px solid black;
-  float: right;
   height: 15px;
   width: 15px;
   margin: 10px;
 }
 
 .card .gem.gem-red {
-  background-color: red;
+  background-color: rgb(204 27 41);
 }
 
 .card .gem.gem-green {
-  background-color: green;
+  background-color: rgb(1 128 69);
 }
 
 .card .gem.gem-blue {
-  background-color: blue;
+  background-color: rgb(2 71 148);
 }
 
 .card .gem.gem-white {
@@ -271,7 +293,7 @@
 }
 
 .card .gem.gem-black {
-  background-color: black;
+  background-color: rgb(50 38 34);
 }
 
 .noblesBox {

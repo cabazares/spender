@@ -125,3 +125,8 @@ export const getTokensToPayForCard = (game: Game, card: Card): GemColor[] => {
   return [...tokensPaid, ...goldTokenCost];
 };
 
+export const getCardBackgroundUrl = (card: Card): string =>
+  `https://placeimg.com/120/160/nature?r=${card.cost.join('-')}`;
+
+export const preloadImg = (src: string): string => (new Image()).src = src;
+
