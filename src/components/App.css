@@ -95,6 +95,10 @@
   flex-flow: wrap;
 }
 
+.playerList .reservedCardsList {
+  cursor: pointer;
+}
+
 .gameBoard {
   display: flex;
   flex-direction: row;
@@ -373,3 +377,4 @@
 .startButton:hover {
   color: #d4d1c4;
 }
+

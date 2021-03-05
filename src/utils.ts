@@ -5,6 +5,7 @@ import {
   Noble,
   CardPool,
   Game,
+  CardLevel,
 } from './types';
 
 import {
@@ -125,8 +126,14 @@ export const getTokensToPayForCard = (game: Game, card: Card): GemColor[] => {
   return [...tokensPaid, ...goldTokenCost];
 };
 
+const IMAGE_TYPES = {
+  [CardLevel.one]: 'nature',
+  [CardLevel.two]: 'animals',
+  [CardLevel.three]: 'arch',
+};
+
 export const getCardBackgroundUrl = (card: Card): string =>
-  `https://placeimg.com/120/160/nature?r=${card.cost.join('-')}`;
+  `https://placeimg.com/120/160/${IMAGE_TYPES[card.level]}?r=${card.cost.join('-')}`;
 
 export const preloadImg = (src: string): string => (new Image()).src = src;
 

@@ -48,14 +48,14 @@ export const PlayerList = (
             </div>
           ))}
         </div>
-        <div>
+        {p.reservedCards.length > 0 && <div className="reservedCardsList">
           Reserved cards:
           {p.reservedCards.map((card, key) => {
             return (<div key={key} onClick={() => {
               onReservedCardListSelect(p);
             }}>{card.color}</div>);
           })}
-        </div>
+        </div>}
         <div>
           Noble points: {p.nobles.reduce((total, noble) => total + noble.points, 0)}
         </div>
